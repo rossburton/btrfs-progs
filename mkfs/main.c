@@ -46,6 +46,7 @@
 #include "help.h"
 #include "mkfs/common.h"
 #include "fsfeatures.h"
+#include "box.h"
 
 int path_cat_out(char *out, const char *p1, const char *p2);
 
@@ -1420,7 +1421,7 @@ out:
 	return ret;
 }
 
-int main(int argc, char **argv)
+int BOX_MAIN(mkfs)(int argc, char **argv)
 {
 	char *file;
 	struct btrfs_root *root;

@@ -38,6 +38,8 @@
 #include "help.h"
 #include "image/metadump.h"
 #include "image/sanitize.h"
+#include "box.h"
+
 
 #define MAX_WORKER_THREADS	(32)
 
@@ -2414,7 +2416,7 @@ static void print_usage(int ret)
 	exit(ret);
 }
 
-int main(int argc, char *argv[])
+int BOX_MAIN(image)(int argc, char *argv[])
 {
 	char *source;
 	char *target;

@@ -19,8 +19,13 @@
 #include "utils.h"
 #include "commands.h"
 #include "cmds-inspect-dump-super.h"
+#include "box.h"
 
-int main(int argc, char **argv)
+static void print_usage(void);
+static void dump_superblock(struct btrfs_super_block *sb, int full);
+static int load_and_dump_sb(char *, int fd, u64 sb_bytenr, int full, int force);
+
+int BOX_MAIN(show_super)(int argc, char **argv)
 {
 
 	int ret;

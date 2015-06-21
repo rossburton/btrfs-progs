@@ -102,6 +102,7 @@
 #include "convert/common.h"
 #include "convert/source-fs.h"
 #include "fsfeatures.h"
+#include "box.h"
 
 extern const struct btrfs_convert_operations ext2_convert_ops;
 extern const struct btrfs_convert_operations reiserfs_convert_ops;
@@ -1679,7 +1680,7 @@ static void print_usage(void)
 	printf("\treiserfs: %s\n", BTRFSCONVERT_REISERFS ? "yes" : "no");
 }
 
-int main(int argc, char *argv[])
+int BOX_MAIN(convert)(int argc, char *argv[])
 {
 	int ret;
 	int packing = 1;

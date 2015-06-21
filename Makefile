@@ -192,6 +192,14 @@ MAKEOPTS = --no-print-directory Q=$(Q)
 # build all by default
 progs = $(progs_install) btrfsck btrfs-corrupt-block
 
+# built-in sources into "busybox"
+progs_box = btrfstune.c mkfs.c btrfs-image.c btrfs-convert.c btrfs-find-root.c
+
+progs_box_objects = $(patsubst %.c, %.box.o, $(progs_box))
+progs_box_objects = $(mkfs_objects) btrfstune.o $(image_objects) \
+		    $(convert_objects) btrfs-find-root.o
+progs_box_static_objects = $(patsubst %.c, %.box.static.o, $(progs_box))
+
 # install only selected
 progs_install = btrfs mkfs.btrfs btrfs-debug-tree \
 	btrfs-map-logical btrfs-image btrfs-zero-log \
@@ -274,6 +282,9 @@ endif
 %.o.d: %.c
 	$(Q)$(CC) -MM -MG -MF $@ -MT $(@:.o.d=.o) -MT $(@:.o.d=.static.o) -MT $@ $(CFLAGS) $<
 
+%.box.o.d: $(progs_box)
+	$(Q)$(CC) -MM -MG -MF $@ -MT $(@:.o.d=.o) -MT $(@:.o.d=.static.o) -MT $@ $(CFLAGS) $<
+
 #
 # Pick from per-file variables, btrfs_*_cflags
 #
@@ -288,6 +299,15 @@ endif
 	@echo "    [CC]     $@"
 	$(Q)$(CC) $(STATIC_CFLAGS) -c $< -o $@ $($(subst -,_,$(@:%.static.o=%)-cflags)) \
 		$($(subst -,_,btrfs-$(@:%/$(notdir $@)=%)-cflags))
+
+%.box.o: %.c
+	@echo "    [CC]     $@"
+	$(Q)$(CC) -DENABLE_BOX=1 $(CFLAGS) -c $< -o $@
+
+%.box.static.o: %.c
+	@echo "    [CC]     $@"
+	$(Q)$(CC) -DENABLE_BOX=1 $(STATIC_CFLAGS) -c $< -o $@
+
 
 all: $(progs) libbtrfs $(BUILDDIRS)
 $(SUBDIRS): $(BUILDDIRS)
@@ -399,6 +419,36 @@ btrfs: btrfs.o $(objects) $(cmds_objects) $(libs_static)
 btrfs.static: btrfs.static.o $(static_objects) $(static_cmds_objects) $(static_libbtrfs_objects)
 	@echo "    [LD]     $@"
 	$(Q)$(CC) -o $@ $^ $(STATIC_LDFLAGS) $(STATIC_LIBS) $(STATIC_LIBS_COMP)
+
+btrfs.box: $(objects) btrfs.box.o help.o $(cmds_objects) $(libs_static) $(progs_box_objects)
+	@echo "    [LD]     $@"
+	$(Q)$(CC) -o btrfs.box btrfs.box.o help.o $(cmds_objects) \
+		$(objects) $(progs_box_objects) \
+		$(btrfs_convert_libs) \
+		$(libs_static) $(LDFLAGS) $(LIBS) $(LIBS_COMP)
+
+btrfs.box.static: $(static_objects) btrfs.box.static.o help.static.o $(static_cmds_objects) $(static_libbtrfs_objects) $(progs_box_static_objects)
+	@echo "    [LD]     $@"
+	$(Q)$(CC) $(STATIC_CFLAGS) -o btrfs.box.static btrfs.box.static.o help.static.o $(static_cmds_objects) \
+		$(progs_box_static_objects) \
+		$(btrfs_convert_libs) \
+		$(static_objects) $(static_libbtrfs_objects) $(STATIC_LDFLAGS) $(STATIC_LIBS)
+
+box-links: btrfs.box
+	@echo "    [LN]     btrfstune"
+	$(Q)$(LN_S) -sf btrfs.box btrfstune
+	@echo "    [LN]     mkfs.btrfs"
+	$(Q)$(LN_S) -sf btrfs.box mkfs.btrfs
+	@echo "    [LN]     btrfs-image"
+	$(Q)$(LN_S) -sf btrfs.box btrfs-image
+	@echo "    [LN]     btrfs-convert"
+	$(Q)$(LN_S) -sf btrfs.box btrfs-convert
+	@echo "    [LN]     btrfs-debug-tree"
+	$(Q)$(LN_S) -sf btrfs.box btrfs-debug-tree
+	@echo "    [LN]     btrfs-find-root"
+	$(Q)$(LN_S) -sf btrfs.box btrfs-find-root
+	@echo "    [LN]     btrfs-show-super"
+	$(Q)$(LN_S) -sf btrfs.box btrfs-show-super
 
 # For backward compatibility, 'btrfs' changes behaviour to fsck if it's named 'btrfsck'
 btrfsck: btrfs
@@ -547,6 +597,7 @@ clean: $(CLEANDIRS)
 		mkfs/*.o mkfs/*.o.d \
 	      dir-test ioctl-test quick-test library-test library-test-static \
               mktables btrfs.static mkfs.btrfs.static fssum \
+	      btrfs.box btrfs.box.static \
 	      $(check_defs) \
 	      $(libs) $(lib_links) \
 	      $(progs_static) $(progs_extra)

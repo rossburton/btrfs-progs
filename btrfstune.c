@@ -34,6 +34,8 @@
 #include "volumes.h"
 #include "help.h"
 
+#include "box.h"
+
 static char *device;
 static int force = 0;
 
@@ -382,7 +384,7 @@ static void print_usage(void)
 	printf("\t-U UUID\t\tchange fsid to UUID\n");
 }
 
-int main(int argc, char *argv[])
+int BOX_MAIN(btrfstune)(int argc, char *argv[])
 {
 	struct btrfs_root *root;
 	unsigned ctree_flags = OPEN_CTREE_WRITES;

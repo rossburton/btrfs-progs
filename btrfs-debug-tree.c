@@ -19,10 +19,11 @@
 #include "disk-io.h"
 #include "volumes.h"
 #include "utils.h"
+#include "box.h"
 #include "commands.h"
 #include "help.h"
 
-int main(int argc, char **argv)
+int BOX_MAIN(debug_tree)(int argc, char **argv)
 {
 	int ret;
 
