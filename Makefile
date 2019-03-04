@@ -420,7 +420,7 @@ libbtrfs.so.0 libbtrfs.so: libbtrfs.so.0.1
 
 libbtrfsutil/%.o: libbtrfsutil/%.c
 	@echo "    [CC]     $@"
-	$(Q)$(CC) $(LIBBTRFSUTIL_CFLAGS) -o $@ -c $< -o $@
+	$(Q)$(CC) $(LIBBTRFSUTIL_CFLAGS) -o $@ -c $<
 
 libbtrfsutil.so.$(libbtrfsutil_version): $(libbtrfsutil_objects)
 	@echo "    [LD]     $@"
